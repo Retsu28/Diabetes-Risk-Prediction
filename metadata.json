@@ -1,0 +1,6 @@
+{
+  "name": "Diabetes Prediction System",
+  "description": "A comprehensive patient management and diabetes risk prediction system using logic-based classification and SQL storage.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
