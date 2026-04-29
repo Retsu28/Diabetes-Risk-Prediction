@@ -1,44 +1,66 @@
+<!-- ============================================================
+     FILE: edit_patient.html  —  Edit Patient Record Form
+     ============================================================ -->
 {% extends 'base.html' %}
 
+{% block page_title %}Edit Patient{% endblock %}
+
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card border-0 shadow-sm text-dark bg-white">
-            <div class="card-header bg-warning py-3">
-                <h5 class="mb-0 fw-bold">Edit Patient: {{ patient.name }}</h5>
+<div class="row justify-content-center animate-in">
+    <div class="col-lg-6 col-md-8">
+        <div class="card" style="overflow:hidden;">
+
+            <!-- Card Header -->
+            <div class="p-4 text-center text-white" style="background: linear-gradient(135deg, #e67e22, #f39c12);">
+                <div style="width:60px; height:60px; border-radius:16px; background:rgba(255,255,255,.18); display:inline-flex; align-items:center; justify-content:center; font-size:1.6rem; margin-bottom:12px; backdrop-filter:blur(4px);">
+                    <i class="bi bi-pencil-square"></i>
+                </div>
+                <h5 class="fw-bold mb-1">Edit Patient: {{ patient.name }}</h5>
+                <p class="mb-0 opacity-75" style="font-size:.85rem;">Update the patient information below.</p>
             </div>
-            <div class="card-body p-4">
+
+            <!-- Card Body -->
+            <div class="card-body p-4 pt-4">
                 <!-- FORM START -->
-                <form action="{{ url_for('edit_patient', id=patient.id) }}" method="POST">
+                <form action="{{ url_for('edit_patient', id=patient.id) }}" method="POST" id="form-edit-patient">
                     
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Full Name</label>
-                        <input type="text" name="name" class="form-control" value="{{ patient.name }}" required>
+                    <div class="form-floating mb-3">
+                        <input type="text" name="name" class="form-control" id="editName" placeholder="Full Name" value="{{ patient.name }}" required>
+                        <label for="editName"><i class="bi bi-person me-1"></i> Full Name</label>
                     </div>
 
-                    <div class="row">
+                    <div class="row g-3">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">Age</label>
-                            <input type="number" name="age" class="form-control" value="{{ patient.age }}" required>
+                            <div class="form-floating">
+                                <input type="number" name="age" class="form-control" id="editAge" placeholder="Age" value="{{ patient.age }}" required>
+                                <label for="editAge"><i class="bi bi-calendar-event me-1"></i> Age (Years)</label>
+                            </div>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">Gender</label>
-                            <select name="gender" class="form-select">
-                                <option value="Male" {% if patient.gender == 'Male' %}selected{% endif %}>Male</option>
-                                <option value="Female" {% if patient.gender == 'Female' %}selected{% endif %}>Female</option>
-                                <option value="Other" {% if patient.gender == 'Other' %}selected{% endif %}>Other</option>
-                            </select>
+                            <div class="form-floating">
+                                <select name="gender" class="form-select" id="editGender">
+                                    <option value="Male" {% if patient.gender == 'Male' %}selected{% endif %}>Male</option>
+                                    <option value="Female" {% if patient.gender == 'Female' %}selected{% endif %}>Female</option>
+                                    <option value="Other" {% if patient.gender == 'Other' %}selected{% endif %}>Other</option>
+                                </select>
+                                <label for="editGender"><i class="bi bi-gender-ambiguous me-1"></i> Gender</label>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="mb-4">
-                        <label class="form-label fw-bold">Contact Info</label>
-                        <input type="text" name="contact" class="form-control" value="{{ patient.contact }}" required>
+                    <div class="form-floating mb-4">
+                        <input type="text" name="contact" class="form-control" id="editContact" placeholder="Contact" value="{{ patient.contact }}" required>
+                        <label for="editContact"><i class="bi bi-telephone me-1"></i> Phone or Email</label>
                     </div>
 
                     <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-warning py-2">Update Changes</button>
-                        <a href="{{ url_for('list_patients') }}" class="btn btn-light py-2">Cancel</a>
+                        <button type="submit" class="btn py-3 btn-loading fw-bold" style="background: linear-gradient(135deg, #e67e22, #f39c12); border:none; border-radius:12px; color:#fff;" id="btn-update-patient">
+                            <span class="btn-text"><i class="bi bi-check2-circle me-1"></i> Update Changes</span>
+                            <span class="spinner-border spinner-border-sm" role="status"></span>
+                        </button>
+                        <a href="{{ url_for('list_patients') }}" class="btn btn-light py-2" style="border-radius:12px; font-weight:500; color:#64748b;" id="btn-cancel-edit">
+                            <i class="bi bi-arrow-left me-1"></i> Cancel
+                        </a>
                     </div>
                 </form>
             </div>

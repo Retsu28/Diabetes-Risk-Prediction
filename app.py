@@ -46,6 +46,13 @@ def dashboard():
         cursor.execute("SELECT COUNT(*) AS total FROM predictions")
         total_predictions = cursor.fetchone()['total']
 
+        # 2b. Get counts for High Risk and Low Risk (for dashboard pie chart)
+        cursor.execute("SELECT COUNT(*) AS total FROM predictions WHERE result = 'High Risk'")
+        high_risk_count = cursor.fetchone()['total']
+
+        cursor.execute("SELECT COUNT(*) AS total FROM predictions WHERE result = 'Low Risk'")
+        low_risk_count = cursor.fetchone()['total']
+
         # 3. Get recent predictions with matching patient names using a JOIN
         query = """
             SELECT p.result, p.created_at, pt.name as patient_name 
@@ -64,6 +71,8 @@ def dashboard():
         return render_template('dashboard.html', 
                                total_patients=total_patients, 
                                total_predictions=total_predictions, 
+                               high_risk_count=high_risk_count,
+                               low_risk_count=low_risk_count,
                                recent=recent)
     except Exception as e:
         return f"Database Error: {str(e)}. Make sure your MySQL server is running and the database exists."

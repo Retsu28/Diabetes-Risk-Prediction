@@ -1,44 +1,66 @@
+<!-- ============================================================
+     FILE: add_patient.html  —  Register New Patient Form
+     ============================================================ -->
 {% extends 'base.html' %}
 
+{% block page_title %}Register Patient{% endblock %}
+
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card border-0 shadow-sm">
-            <div class="card-header bg-primary text-white py-3">
-                <h5 class="mb-0 fw-bold">Register New Patient</h5>
+<div class="row justify-content-center animate-in">
+    <div class="col-lg-6 col-md-8">
+        <div class="card" style="overflow:hidden;">
+
+            <!-- Card Header -->
+            <div class="p-4 text-center text-white" style="background: linear-gradient(135deg, #0b3d91, #0d6efd);">
+                <div style="width:60px; height:60px; border-radius:16px; background:rgba(255,255,255,.15); display:inline-flex; align-items:center; justify-content:center; font-size:1.6rem; margin-bottom:12px; backdrop-filter:blur(4px);">
+                    <i class="bi bi-person-plus-fill"></i>
+                </div>
+                <h5 class="fw-bold mb-1">Register New Patient</h5>
+                <p class="mb-0 opacity-75" style="font-size:.85rem;">Fill in the details below to add a new patient record.</p>
             </div>
-            <div class="card-body p-4">
+
+            <!-- Card Body -->
+            <div class="card-body p-4 pt-4">
                 <!-- FORM START -->
-                <form action="{{ url_for('add_patient') }}" method="POST">
+                <form action="{{ url_for('add_patient') }}" method="POST" id="form-add-patient">
                     
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Full Name</label>
-                        <input type="text" name="name" class="form-control" placeholder="Enter patient name" required>
+                    <div class="form-floating mb-3">
+                        <input type="text" name="name" class="form-control" id="inputName" placeholder="Full Name" required>
+                        <label for="inputName"><i class="bi bi-person me-1"></i> Full Name</label>
                     </div>
 
-                    <div class="row">
+                    <div class="row g-3">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">Age</label>
-                            <input type="number" name="age" class="form-control" placeholder="Years" required>
+                            <div class="form-floating">
+                                <input type="number" name="age" class="form-control" id="inputAge" placeholder="Age" required>
+                                <label for="inputAge"><i class="bi bi-calendar-event me-1"></i> Age (Years)</label>
+                            </div>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">Gender</label>
-                            <select name="gender" class="form-select">
-                                <option value="Male">Male</option>
-                                <option value="Female">Female</option>
-                                <option value="Other">Other</option>
-                            </select>
+                            <div class="form-floating">
+                                <select name="gender" class="form-select" id="inputGender">
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                                <label for="inputGender"><i class="bi bi-gender-ambiguous me-1"></i> Gender</label>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="mb-4">
-                        <label class="form-label fw-bold">Contact Info</label>
-                        <input type="text" name="contact" class="form-control" placeholder="Phone or Email" required>
+                    <div class="form-floating mb-4">
+                        <input type="text" name="contact" class="form-control" id="inputContact" placeholder="Contact" required>
+                        <label for="inputContact"><i class="bi bi-telephone me-1"></i> Phone or Email</label>
                     </div>
 
                     <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-primary py-2">Save Record</button>
-                        <a href="{{ url_for('list_patients') }}" class="btn btn-light py-2">Cancel</a>
+                        <button type="submit" class="btn btn-primary py-3 btn-loading" id="btn-save-patient">
+                            <span class="btn-text"><i class="bi bi-check2-circle me-1"></i> Save Record</span>
+                            <span class="spinner-border spinner-border-sm" role="status"></span>
+                        </button>
+                        <a href="{{ url_for('list_patients') }}" class="btn btn-light py-2" style="border-radius:12px; font-weight:500; color:#64748b;" id="btn-cancel-add">
+                            <i class="bi bi-arrow-left me-1"></i> Cancel
+                        </a>
                     </div>
                     
                 </form>
