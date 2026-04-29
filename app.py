@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
 import mysql.connector # Library to connect Python to MySQL
-import joblib          # Library to load the saved 'model.pkl'
+import joblib          # Library to load the saved 'model.pkl' and 'scaler.pkl'
 import numpy as np     # Library for handling numerical data (arrays)
 
 # Initialize the Flask application
@@ -161,8 +161,8 @@ def predict():
     PREDICTION ROUTE
     - GET: Shows form with a dropdown list of patients.
     - POST: 
-      1. Loads the Scikit-learn model from 'model.pkl'.
-      2. Runs prediction logic.
+      1. Loads the Scikit-learn model and scaler from .pkl files.
+      2. Runs prediction logic using all 8 Pima dataset features.
       3. Saves the detailed result into the 'predictions' table.
     """
     conn = get_db_connection()
@@ -173,28 +173,35 @@ def predict():
         preg = float(request.form['pregnancies'])
         gluc = float(request.form['glucose'])
         bp = float(request.form['blood_pressure'])
+        skin = float(request.form['skin_thickness'])
+        insulin = float(request.form['insulin'])
         bmi = float(request.form['bmi'])
+        dpf = float(request.form['diabetes_pedigree'])
         age = float(request.form['age'])
 
         try:
-            # 1. Load the pre-trained Logistic Regression model
+            # 1. Load the pre-trained Logistic Regression model and scaler
             model = joblib.load('model.pkl')
+            scaler = joblib.load('scaler.pkl')
             
-            # 2. Arrange inputs into a 2D list for the model
-            # Format: [[pregnancies, glucose, blood_pressure, bmi, age]]
-            input_data = np.array([[preg, gluc, bp, bmi, age]])
+            # 2. Arrange inputs into a 2D array matching training feature order
+            # Format: [[Pregnancies, Glucose, BloodPressure, SkinThickness, Insulin, BMI, DiabetesPedigreeFunction, Age]]
+            input_data = np.array([[preg, gluc, bp, skin, insulin, bmi, dpf, age]])
             
-            # 3. Predict (returns 0 for healthy, 1 for diabetes)
-            prediction_bin = model.predict(input_data)[0]
+            # 3. Scale the input using the same scaler used during training
+            input_scaled = scaler.transform(input_data)
+            
+            # 4. Predict (returns 0 for healthy, 1 for diabetes)
+            prediction_bin = model.predict(input_scaled)[0]
             result_text = "High Risk" if prediction_bin == 1 else "Low Risk"
 
-            # 4. Save this specific prediction into MySQL history
+            # 5. Save this specific prediction into MySQL history
             query = """
                 INSERT INTO predictions 
-                (patient_id, pregnancies, glucose, blood_pressure, bmi, age, result)
-                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                (patient_id, pregnancies, glucose, blood_pressure, skin_thickness, insulin, bmi, diabetes_pedigree, age, result)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
-            cursor.execute(query, (patient_id, preg, gluc, bp, bmi, age, result_text))
+            cursor.execute(query, (patient_id, preg, gluc, bp, skin, insulin, bmi, dpf, age, result_text))
             conn.commit()
             cursor.close()
             conn.close()

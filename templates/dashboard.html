@@ -2,29 +2,51 @@
 
 {% block content %}
 <div class="row mb-4">
-    <div class="col-12">
-        <h2 class="fw-bold">Health Dashboard</h2>
-        <p class="text-muted">Summary of system activity and latest risk assessments.</p>
+    <div class="col-12 d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div>
+            <h2 class="fw-bold">Health Dashboard</h2>
+            <p class="text-muted mb-0">Summary of system activity and latest risk assessments.</p>
+        </div>
+        <a href="{{ url_for('predict') }}" class="btn btn-primary btn-lg shadow fw-bold">
+            &#9889; Run Risk Assessment
+        </a>
     </div>
 </div>
 
 <div class="row text-center">
     <!-- Card 1: Total Patients -->
-    <div class="col-md-6 mb-4">
-        <div class="card border-0 shadow-sm">
+    <div class="col-md-4 mb-4">
+        <a href="{{ url_for('list_patients') }}" class="text-decoration-none">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body p-4">
+                    <h5 class="text-uppercase text-muted small fw-bold">Total Patients</h5>
+                    <h1 class="display-4 fw-bold text-primary">{{ total_patients }}</h1>
+                    <p class="text-muted small mt-2 mb-0">Click to manage patients</p>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <!-- Card 2: Total Predictions -->
+    <div class="col-md-4 mb-4">
+        <div class="card border-0 shadow-sm h-100">
             <div class="card-body p-4">
-                <h5 class="text-uppercase text-muted small fw-bold">Total Patients</h5>
-                <h1 class="display-4 fw-bold text-primary">{{ total_patients }}</h1>
+                <h5 class="text-uppercase text-muted small fw-bold">Risk Assessments</h5>
+                <h1 class="display-4 fw-bold text-success">{{ total_predictions }}</h1>
+                <a href="{{ url_for('predict') }}" class="btn btn-outline-success btn-sm mt-2">New Assessment</a>
             </div>
         </div>
     </div>
 
-    <!-- Card 2: Total Predictions -->
-    <div class="col-md-6 mb-4">
-        <div class="card border-0 shadow-sm">
+    <!-- Card 3: Quick Actions -->
+    <div class="col-md-4 mb-4">
+        <div class="card border-0 shadow-sm h-100">
             <div class="card-body p-4">
-                <h5 class="text-uppercase text-muted small fw-bold">Risk Assessments</h5>
-                <h1 class="display-4 fw-bold text-success">{{ total_predictions }}</h1>
+                <h5 class="text-uppercase text-muted small fw-bold">Quick Actions</h5>
+                <div class="d-grid gap-2 mt-3">
+                    <a href="{{ url_for('add_patient') }}" class="btn btn-outline-primary">+ Add Patient</a>
+                    <a href="{{ url_for('predict') }}" class="btn btn-outline-dark">&#128300; Predict Diabetes Risk</a>
+                </div>
             </div>
         </div>
     </div>
@@ -33,8 +55,9 @@
 <div class="row mt-4">
     <div class="col-12">
         <div class="card border-0 shadow-sm">
-            <div class="card-header bg-white py-3">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
                 <h5 class="mb-0 fw-bold">Recent Prediction History</h5>
+                <a href="{{ url_for('predict') }}" class="btn btn-sm btn-primary">+ New Prediction</a>
             </div>
             <div class="card-body p-0">
                 <table class="table table-hover mb-0">

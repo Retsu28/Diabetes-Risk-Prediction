@@ -1,50 +1,84 @@
 import pandas as pd
 import numpy as np
 from sklearn.linear_model import LogisticRegression
-import joblib # Used to save the trained model to a file
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import accuracy_score, classification_report
+import joblib  # Used to save the trained model and scaler to files
 
-# --- STEP 1: CREATE SAMPLE DATA ---
-# Since we are using a synthetic sample, we provide some example numbers.
-# In a real project, you would load a CSV file here.
-def get_sample_data():
-    data = {
-        'Pregnancies': [1, 8, 1, 1, 0, 5, 3, 10, 2, 8, 1, 0, 1, 5, 7],
-        'Glucose': [85, 183, 89, 78, 137, 116, 78, 115, 197, 125, 110, 168, 139, 189, 100],
-        'BloodPressure': [66, 64, 66, 50, 40, 74, 50, 0, 70, 96, 92, 74, 80, 60, 0],
-        'BMI': [26.6, 23.3, 28.1, 31, 43.1, 25.6, 31, 35.3, 34.3, 0, 37.6, 38, 27.1, 30.1, 30],
-        'Age': [31, 32, 21, 26, 33, 30, 26, 29, 53, 54, 30, 41, 22, 59, 32],
-        'Outcome': [0, 1, 0, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0] # 1 = Diabetes Risk, 0 = Low Risk
-    }
-    return pd.DataFrame(data)
+# --- CONFIGURATION ---
+DATASET_PATH = 'diabetes.csv'  # Pima Indians Diabetes Dataset (768 samples)
+MODEL_PATH = 'model.pkl'
+SCALER_PATH = 'scaler.pkl'
+
+# The 8 features from the Pima Indians Diabetes Dataset
+FEATURE_COLUMNS = [
+    'Pregnancies',
+    'Glucose',
+    'BloodPressure',
+    'SkinThickness',
+    'Insulin',
+    'BMI',
+    'DiabetesPedigreeFunction',
+    'Age'
+]
+TARGET_COLUMN = 'Outcome'
 
 def train_and_save():
-    print("Starting Model Training Pipeline...")
+    print("=" * 50)
+    print("Diabetes Risk Prediction - Model Training Pipeline")
+    print("Using: Pima Indians Diabetes Dataset (768 samples)")
+    print("=" * 50)
 
-    # 1. Load the data
-    df = get_sample_data()
+    # --- STEP 1: LOAD THE REAL DATASET ---
+    print("\n[1/5] Loading dataset from:", DATASET_PATH)
+    df = pd.read_csv(DATASET_PATH)
+    print(f"  -> Dataset shape: {df.shape[0]} rows x {df.shape[1]} columns")
+    print(f"  -> Outcome distribution:\n{df[TARGET_COLUMN].value_counts().to_string()}")
 
-    # 2. Define Features (X) and Target (y)
-    # X = the factors we use to guess (Pregnancies, Glucose, etc.)
-    # y = the actual answer (Outcome)
-    X = df[['Pregnancies', 'Glucose', 'BloodPressure', 'BMI', 'Age']]
-    y = df['Outcome']
+    # --- STEP 2: SPLIT FEATURES AND TARGET ---
+    print("\n[2/5] Preparing features and target...")
+    X = df[FEATURE_COLUMNS]
+    y = df[TARGET_COLUMN]
 
-    # 3. Initialize the Logistic Regression algorithm
-    # This is a standard math-based model for binary classification (Yes/No answers)
-    model = LogisticRegression(max_iter=1000)
+    # --- STEP 3: TRAIN/TEST SPLIT ---
+    print("\n[3/5] Splitting into train/test sets (80/20)...")
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=42, stratify=y
+    )
+    print(f"  -> Training samples: {len(X_train)}")
+    print(f"  -> Testing samples:  {len(X_test)}")
 
-    # 4. Train the model (this is where it "learns" the patterns)
-    print("Fitting model to data...")
-    model.fit(X, y)
+    # --- STEP 4: SCALE FEATURES ---
+    print("\n[4/5] Scaling features with StandardScaler...")
+    scaler = StandardScaler()
+    X_train_scaled = scaler.fit_transform(X_train)
+    X_test_scaled = scaler.transform(X_test)
 
-    # 5. Save the trained model to a file called 'model.pkl'
-    # The '.pkl' file contains the math weights the model just learned.
-    joblib.dump(model, 'model.pkl')
-    
-    print("-" * 30)
-    print("SUCCESS: Model trained and saved as 'model.pkl'")
+    # --- STEP 5: TRAIN AND EVALUATE ---
+    print("\n[5/5] Training Logistic Regression model...")
+    model = LogisticRegression(max_iter=1000, random_state=42)
+    model.fit(X_train_scaled, y_train)
+
+    # Evaluate on test set
+    y_pred = model.predict(X_test_scaled)
+    accuracy = accuracy_score(y_test, y_pred)
+
+    print("\n" + "=" * 50)
+    print(f"  Model Accuracy: {accuracy:.2%}")
+    print("=" * 50)
+    print("\nClassification Report:")
+    print(classification_report(y_test, y_pred, target_names=['Low Risk (0)', 'High Risk (1)']))
+
+    # --- SAVE MODEL AND SCALER ---
+    joblib.dump(model, MODEL_PATH)
+    joblib.dump(scaler, SCALER_PATH)
+
+    print("-" * 50)
+    print(f"SUCCESS: Model saved as '{MODEL_PATH}'")
+    print(f"SUCCESS: Scaler saved as '{SCALER_PATH}'")
     print("You can now run 'app.py' and perform predictions!")
-    print("-" * 30)
+    print("-" * 50)
 
 if __name__ == "__main__":
     train_and_save()
