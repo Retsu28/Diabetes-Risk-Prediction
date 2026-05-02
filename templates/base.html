@@ -3,6 +3,7 @@
      ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,7 +13,9 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display&display=swap"
+        rel="stylesheet">
 
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -26,18 +29,20 @@
     <style>
         /* ── Global ────────────────────────────────────── */
         :root {
-            --primary:        #0d6efd;
-            --primary-dark:   #0a58ca;
-            --primary-light:  #e8f0fe;
-            --accent:         #4dabf7;
-            --bg-body:        #f0f4f8;
-            --sidebar-width:  260px;
-            --sidebar-bg:     linear-gradient(180deg, #05204a 0%, #0d6efd 100%);
-            --card-radius:    16px;
-            --transition:     all .25s ease;
+            --primary: #0d6efd;
+            --primary-dark: #0a58ca;
+            --primary-light: #e8f0fe;
+            --accent: #4dabf7;
+            --bg-body: #f0f4f8;
+            --sidebar-width: 260px;
+            --sidebar-bg: linear-gradient(180deg, #05204a 0%, #0d6efd 100%);
+            --card-radius: 16px;
+            --transition: all .25s ease;
         }
 
-        * { box-sizing: border-box; }
+        * {
+            box-sizing: border-box;
+        }
 
         body {
             font-family: 'DM Sans', sans-serif;
@@ -63,13 +68,13 @@
 
         .sidebar-brand {
             padding: 28px 24px 20px;
-            border-bottom: 1px solid rgba(255,255,255,.12);
+            border-bottom: 1px solid rgba(255, 255, 255, .12);
         }
 
         .sidebar-brand .logo-icon {
             width: 40px;
             height: 40px;
-            background: rgba(255,255,255,.18);
+            background: rgba(255, 255, 255, .18);
             border-radius: 12px;
             display: inline-flex;
             align-items: center;
@@ -104,7 +109,9 @@
             margin: 0;
         }
 
-        .sidebar-nav li { margin-bottom: 4px; }
+        .sidebar-nav li {
+            margin-bottom: 4px;
+        }
 
         .sidebar-nav a {
             display: flex;
@@ -112,7 +119,7 @@
             gap: 12px;
             padding: 12px 16px;
             border-radius: 12px;
-            color: rgba(255,255,255,.78);
+            color: rgba(255, 255, 255, .78);
             text-decoration: none;
             font-weight: 500;
             font-size: .92rem;
@@ -121,13 +128,13 @@
 
         .sidebar-nav a:hover,
         .sidebar-nav a.active {
-            background: rgba(255,255,255,.15);
+            background: rgba(255, 255, 255, .15);
             color: #fff;
         }
 
         .sidebar-nav a.active {
-            background: rgba(255,255,255,.22);
-            box-shadow: 0 2px 8px rgba(0,0,0,.12);
+            background: rgba(255, 255, 255, .22);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, .12);
         }
 
         .sidebar-nav a i {
@@ -138,7 +145,7 @@
 
         .sidebar-footer {
             padding: 18px 24px;
-            border-top: 1px solid rgba(255,255,255,.1);
+            border-top: 1px solid rgba(255, 255, 255, .1);
             font-size: .72rem;
             opacity: .55;
             text-align: center;
@@ -201,12 +208,12 @@
         .card {
             border: none;
             border-radius: var(--card-radius) !important;
-            box-shadow: 0 1px 3px rgba(0,0,0,.06), 0 4px 16px rgba(0,0,0,.04);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, .06), 0 4px 16px rgba(0, 0, 0, .04);
             transition: var(--transition);
         }
 
         .card:hover {
-            box-shadow: 0 4px 12px rgba(0,0,0,.08), 0 8px 28px rgba(0,0,0,.06);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, .08), 0 8px 28px rgba(0, 0, 0, .06);
             transform: translateY(-2px);
         }
 
@@ -298,20 +305,20 @@
         }
 
         /* ── Form Styles ───────────────────────────────── */
-        .form-floating > .form-control,
-        .form-floating > .form-select {
+        .form-floating>.form-control,
+        .form-floating>.form-select {
             border-radius: 12px;
             border: 2px solid #e2e8f0;
             transition: var(--transition);
         }
 
-        .form-floating > .form-control:focus,
-        .form-floating > .form-select:focus {
+        .form-floating>.form-control:focus,
+        .form-floating>.form-select:focus {
             border-color: var(--primary);
             box-shadow: 0 0 0 4px rgba(13, 110, 253, .12);
         }
 
-        .form-floating > label {
+        .form-floating>label {
             color: #94a3b8;
         }
 
@@ -341,8 +348,13 @@
             display: none;
         }
 
-        .btn-loading.loading .btn-text { display: none; }
-        .btn-loading.loading .spinner-border { display: inline-block; }
+        .btn-loading.loading .btn-text {
+            display: none;
+        }
+
+        .btn-loading.loading .spinner-border {
+            display: inline-block;
+        }
 
         /* ── Alert flash ───────────────────────────────── */
         .alert {
@@ -353,29 +365,53 @@
 
         /* ── Animations ────────────────────────────────── */
         @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to   { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .animate-in {
             animation: fadeInUp .5s ease forwards;
         }
 
-        .animate-delay-1 { animation-delay: .1s; opacity: 0; }
-        .animate-delay-2 { animation-delay: .2s; opacity: 0; }
-        .animate-delay-3 { animation-delay: .3s; opacity: 0; }
-        .animate-delay-4 { animation-delay: .35s; opacity: 0; }
+        .animate-delay-1 {
+            animation-delay: .1s;
+            opacity: 0;
+        }
+
+        .animate-delay-2 {
+            animation-delay: .2s;
+            opacity: 0;
+        }
+
+        .animate-delay-3 {
+            animation-delay: .3s;
+            opacity: 0;
+        }
+
+        .animate-delay-4 {
+            animation-delay: .35s;
+            opacity: 0;
+        }
 
         /* ── Overlay for mobile ────────────────────────── */
         .sidebar-overlay {
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0,0,0,.45);
+            background: rgba(0, 0, 0, .45);
             z-index: 1035;
         }
 
-        .sidebar-overlay.show { display: block; }
+        .sidebar-overlay.show {
+            display: block;
+        }
 
         /* ── Responsive ────────────────────────────────── */
         @media (max-width: 991.98px) {
@@ -405,10 +441,22 @@
         }
 
         /* ── Scrollbar ─────────────────────────────────── */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #c1cdd9; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #c1cdd9;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
 
         /* ── Accessibility: Focus Ring ─────────────────── */
         *:focus-visible {
@@ -417,6 +465,7 @@
         }
     </style>
 </head>
+
 <body>
 
     <!-- ── Sidebar Overlay (Mobile) ──────────────────── -->
@@ -432,29 +481,29 @@
 
         <ul class="sidebar-nav">
             <li>
-                <a href="{{ url_for('dashboard') }}" class="{% if request.endpoint == 'dashboard' %}active{% endif %}" id="nav-dashboard">
+                <a href="{{ url_for('dashboard') }}" class="{% if request.endpoint == 'dashboard' %}active{% endif %}"
+                    id="nav-dashboard">
                     <i class="bi bi-grid-1x2-fill"></i> Dashboard
                 </a>
             </li>
             <li>
-                <a href="{{ url_for('list_patients') }}" class="{% if request.endpoint in ['list_patients','add_patient','edit_patient'] %}active{% endif %}" id="nav-patients">
+                <a href="{{ url_for('list_patients') }}"
+                    class="{% if request.endpoint in ['list_patients','add_patient','edit_patient'] %}active{% endif %}"
+                    id="nav-patients">
                     <i class="bi bi-people-fill"></i> Patients
                 </a>
             </li>
             <li>
-                <a href="{{ url_for('predict') }}" class="{% if request.endpoint == 'predict' %}active{% endif %}" id="nav-predict">
+                <a href="{{ url_for('predict') }}" class="{% if request.endpoint == 'predict' %}active{% endif %}"
+                    id="nav-predict">
                     <i class="bi bi-clipboard2-pulse-fill"></i> Predict Risk
                 </a>
             </li>
-            <li>
-                <a href="#" class="{% if request.endpoint == 'patient_history' %}active{% endif %}" id="nav-history" onclick="event.preventDefault();" style="opacity:.5; cursor:default;">
-                    <i class="bi bi-clock-history"></i> Patient History
-                </a>
-            </li>
+
         </ul>
 
         <div class="sidebar-footer">
-            &copy; 2026 DiabetesPredict &middot; Capstone Project
+            &copy; 2026 DiabetesPrediction &middot; For Healthcare Professionals.
         </div>
     </aside>
 
@@ -470,7 +519,9 @@
                 <span class="page-title">{% block page_title %}Dashboard{% endblock %}</span>
             </div>
             <div class="topbar-right">
-                <a href="{{ url_for('predict') }}" class="btn btn-primary btn-sm d-none d-md-inline-flex align-items-center gap-2" id="btn-new-assessment" aria-label="New Assessment">
+                <a href="{{ url_for('predict') }}"
+                    class="btn btn-primary btn-sm d-none d-md-inline-flex align-items-center gap-2"
+                    id="btn-new-assessment" aria-label="New Assessment">
                     <i class="bi bi-lightning-fill"></i> New Assessment
                 </a>
             </div>
@@ -480,15 +531,16 @@
         <div class="content-area">
             <!-- Flash Messages -->
             {% with messages = get_flashed_messages() %}
-              {% if messages %}
-                {% for message in messages %}
-                  <div class="alert alert-success alert-dismissible fade show d-flex align-items-center gap-2 animate-in" role="alert">
-                      <i class="bi bi-check-circle-fill fs-5"></i>
-                      {{ message }}
-                      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                  </div>
-                {% endfor %}
-              {% endif %}
+            {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-success alert-dismissible fade show d-flex align-items-center gap-2 animate-in"
+                role="alert">
+                <i class="bi bi-check-circle-fill fs-5"></i>
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+            {% endif %}
             {% endwith %}
 
             {% block content %}{% endblock %}
@@ -507,14 +559,14 @@
 
         // ── Loading State for Submit Buttons ─────────────
         // Skip forms that manage their own loading state (e.g. predict form)
-        document.querySelectorAll('form').forEach(function(form) {
+        document.querySelectorAll('form').forEach(function (form) {
             if (form.id === 'form-predict') return; /* handled by predict.html script */
-            form.addEventListener('submit', function() {
+            form.addEventListener('submit', function () {
                 var btn = form.querySelector('.btn-loading');
                 if (btn) {
                     btn.classList.add('loading');
                     // Delay disabling so the form submission goes through first
-                    setTimeout(function() { btn.disabled = true; }, 50);
+                    setTimeout(function () { btn.disabled = true; }, 50);
                 }
             });
         });
@@ -522,4 +574,5 @@
 
     {% block scripts %}{% endblock %}
 </body>
+
 </html>

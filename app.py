@@ -2,12 +2,14 @@ from flask import Flask, render_template, request, redirect, url_for, flash, jso
 import mysql.connector # Library to connect Python to MySQL
 import joblib          # Library to load the saved 'model.pkl' and 'scaler.pkl'
 import numpy as np     # Library for handling numerical data (arrays)
+import os              # For environment variables and secure key generation
+import logging         # For safe server-side error logging
 
 # Initialize the Flask application
 app = Flask(__name__)
 
 # A secret key is required for Flask 'flash' messages (pop-ups)
-app.secret_key = 'your_super_secret_key'
+app.secret_key = os.environ.get('FLASK_SECRET_KEY', os.urandom(24))
 
 # --- DATABASE CONFIGURATION ---
 # IMPORTANT: Update these values to match your local MySQL settings
@@ -86,7 +88,15 @@ def dashboard():
                                high_risk_rate=high_risk_rate,
                                recent=recent)
     except Exception as e:
-        return f"Database Error: {str(e)}. Make sure your MySQL server is running and the database exists."
+        logging.error(f"Dashboard database error: {e}")
+        flash("A system error occurred while loading the dashboard. Please ensure the MySQL server is running.")
+        return render_template('dashboard.html', 
+                               total_patients=0, 
+                               total_predictions=0, 
+                               high_risk_count=0,
+                               low_risk_count=0,
+                               high_risk_rate=0,
+                               recent=[])
 
 @app.route('/patients')
 def list_patients():
@@ -158,9 +168,14 @@ def edit_patient(id):
     patient = cursor.fetchone()
     cursor.close()
     conn.close()
+
+    if not patient:
+        flash("Patient not found.")
+        return redirect(url_for('list_patients'))
+
     return render_template('edit_patient.html', patient=patient)
 
-@app.route('/patients/delete/<int:id>')
+@app.route('/patients/delete/<int:id>', methods=['POST'])
 def delete_patient(id):
     """
     DELETE PATIENT ROUTE
@@ -228,15 +243,36 @@ def predict():
     cursor = conn.cursor(dictionary=True)
 
     if request.method == 'POST':
-        patient_id = request.form['patient_id']
-        preg = float(request.form['pregnancies'])
-        gluc = float(request.form['glucose'])
-        bp = float(request.form['blood_pressure'])
-        skin = float(request.form['skin_thickness'])
-        insulin = float(request.form['insulin'])
-        bmi = float(request.form['bmi'])
-        dpf = float(request.form['diabetes_pedigree'])
-        age = float(request.form['age'])
+        # --- Input Parsing (catch missing/non-numeric fields) ---
+        try:
+            patient_id = request.form['patient_id']
+            preg = float(request.form['pregnancies'])
+            gluc = float(request.form['glucose'])
+            bp = float(request.form['blood_pressure'])
+            skin = float(request.form['skin_thickness'])
+            insulin = float(request.form['insulin'])
+            bmi = float(request.form['bmi'])
+            dpf = float(request.form['diabetes_pedigree'])
+            age = float(request.form['age'])
+        except (KeyError, ValueError):
+            flash("Invalid input. Please fill all fields with valid numbers.")
+            cursor.close()
+            conn.close()
+            return redirect(url_for('predict'))
+
+        # --- Server-side Range Validation (mirrors client-side checks) ---
+        FIELD_RANGES = {
+            'Pregnancies': (preg, 0, 20), 'Glucose': (gluc, 44, 199),
+            'Blood Pressure': (bp, 24, 122), 'Skin Thickness': (skin, 7, 99),
+            'Insulin': (insulin, 14, 846), 'BMI': (bmi, 18.0, 67.1),
+            'Diabetes Pedigree': (dpf, 0.078, 2.42), 'Age': (age, 21, 81)
+        }
+        for field_name, (val, lo, hi) in FIELD_RANGES.items():
+            if not (lo <= val <= hi):
+                flash(f"Invalid {field_name}: value must be between {lo} and {hi}.")
+                cursor.close()
+                conn.close()
+                return redirect(url_for('predict'))
 
         try:
             # 1. Load the pre-trained Logistic Regression model and scaler
@@ -267,10 +303,14 @@ def predict():
 
             return render_template('predict.html', result=result_text, patients=[])
         except Exception as e:
-            return f"Error during prediction: {str(e)}. Did you run 'train_model.py' first?"
+            logging.error(f"Prediction error: {e}")
+            cursor.close()
+            conn.close()
+            flash("An error occurred during prediction. Please ensure the ML model is trained (run train_model.py).")
+            return redirect(url_for('predict'))
 
     # For the GET request, we need a list of patients for the dropdown menu
-    cursor.execute("SELECT id, name FROM patients")
+    cursor.execute("SELECT id, name, gender FROM patients")
     patients_list = cursor.fetchall()
     cursor.close()
     conn.close()
@@ -283,4 +323,4 @@ def predict():
 
 if __name__ == '__main__':
     # Start the server. In your local VS Code, debug=True is very helpful.
-    app.run(host='0.0.0.0', port=3000, debug=True)
+    app.run(host='0.0.0.0', port=3000, debug=os.environ.get('FLASK_DEBUG', 'true').lower() == 'true')

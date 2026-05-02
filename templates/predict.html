@@ -97,7 +97,7 @@
                             <select name="patient_id" class="form-select" id="selectPatient" required>
                                 <option value=""{% if not preselected_patient_id %} selected{% endif %}>-- Click to Choose Patient --</option>
                                 {% for pt in patients %}
-                                <option value="{{ pt.id }}"{% if preselected_patient_id == pt.id %} selected{% endif %}>{{ pt.name }} (ID: {{ pt.id }})</option>
+                                <option value="{{ pt.id }}" data-gender="{{ pt.gender }}"{% if preselected_patient_id == pt.id %} selected{% endif %}>{{ pt.name }} (ID: {{ pt.id }})</option>
                                 {% endfor %}
                             </select>
                             <label for="selectPatient"><i class="bi bi-person-check me-1"></i> Patient</label>
@@ -120,6 +120,7 @@
                                 <label for="inputPreg">Pregnancies</label>
                             </div>
                             <div class="field-hint" id="hintPreg">Valid range: 0 – 20</div>
+                            <div class="key-factor-badge"><i class="bi bi-graph-up-arrow me-1"></i>3rd highest risk contributor</div>
                             <div class="field-error" id="errorPreg"></div>
                         </div>
                         <div class="col-md-6">
@@ -128,6 +129,7 @@
                                 <label for="inputGlucose">Glucose (mg/dL)</label>
                             </div>
                             <div class="field-hint" id="hintGlucose">Valid range: 44 – 199</div>
+                            <div class="key-factor-badge key-factor-primary"><i class="bi bi-graph-up-arrow me-1"></i>#1 risk contributor</div>
                             <div class="field-error" id="errorGlucose"></div>
                         </div>
                     </div>
@@ -166,6 +168,7 @@
                                 <label for="inputBMI">Body Mass Index (BMI)</label>
                             </div>
                             <div class="field-hint" id="hintBMI">Valid range: 18.0 – 67.1</div>
+                            <div class="key-factor-badge key-factor-secondary"><i class="bi bi-graph-up-arrow me-1"></i>#2 risk contributor</div>
                             <div class="field-error" id="errorBMI"></div>
                         </div>
                     </div>
@@ -220,6 +223,28 @@
 
 <!-- Validation & Loading Overlay Styles -->
 <style>
+/* ── Key Risk Factor Badges ──────────────────────────────── */
+.key-factor-badge {
+    display: inline-flex;
+    align-items: center;
+    font-size: .68rem;
+    font-weight: 600;
+    letter-spacing: .3px;
+    margin-top: 5px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: rgba(243, 156, 18, .1);
+    color: #e67e22;
+}
+.key-factor-badge.key-factor-primary {
+    background: rgba(231, 76, 60, .1);
+    color: #e74c3c;
+}
+.key-factor-badge.key-factor-secondary {
+    background: rgba(13, 110, 253, .1);
+    color: #0d6efd;
+}
+
 /* ── Field Hint & Validation Styles ──────────────────────────── */
 .field-hint {
     font-size: .75rem;
@@ -397,7 +422,43 @@
         });
     });
 
-    /* Initial button state check on page load */
+    /* ── Gender-aware Pregnancies Lock ─────────────────── */
+    var selectPatient = document.getElementById('selectPatient');
+    var pregInput     = document.getElementById('inputPreg');
+    var hintPreg      = document.getElementById('hintPreg');
+
+    function updatePregnancyField() {
+        if (!selectPatient || !pregInput) return;
+        var opt = selectPatient.options[selectPatient.selectedIndex];
+        var gender = opt ? (opt.getAttribute('data-gender') || '') : '';
+        var isMale = gender === 'Male';
+
+        if (isMale) {
+            pregInput.value = '0';
+            pregInput.readOnly = true;
+            pregInput.style.backgroundColor = '#f1f5f9';
+            pregInput.style.opacity = '0.6';
+            if (hintPreg) hintPreg.textContent = 'Not applicable for male patients';
+            /* Clear any existing error on this field */
+            pregInput.classList.remove('is-invalid-range');
+            var errPreg = document.getElementById('errorPreg');
+            if (errPreg) { errPreg.textContent = ''; errPreg.classList.remove('visible'); }
+            if (hintPreg) hintPreg.classList.remove('hidden');
+        } else {
+            pregInput.readOnly = false;
+            pregInput.style.backgroundColor = '';
+            pregInput.style.opacity = '';
+            if (hintPreg) hintPreg.textContent = 'Valid range: 0 \u2013 20';
+        }
+        /* Re-validate after change */
+        validateField(fields[0]);
+        updateButtonState();
+    }
+
+    selectPatient.addEventListener('change', updatePregnancyField);
+
+    /* Initial state check on page load */
+    updatePregnancyField();
     updateButtonState();
 
     /* ── Form submit: block if invalid, activate overlay if valid ── */

@@ -6,16 +6,8 @@
 {% block page_title %}Dashboard{% endblock %}
 
 {% block content %}
-<!-- ── Welcome Header ────────────────────────────────── -->
-<div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4 animate-in">
-    <div>
-        <h2 class="heading-serif fw-bold mb-1" style="color:#1e293b; letter-spacing:-.5px;">Health Dashboard</h2>
-        <p class="text-muted mb-0" style="font-size:.92rem;">Summary of system activity and latest risk assessments.</p>
-    </div>
-    <a href="{{ url_for('predict') }}" class="btn btn-primary d-flex align-items-center gap-2 shadow-sm" id="btn-dashboard-assess">
-        <i class="bi bi-lightning-fill"></i> Run Risk Assessment
-    </a>
-</div>
+<!-- ── Subtitle ────────────────────────────────────── -->
+<p class="text-muted mb-4 animate-in" style="font-size:.92rem;">Summary of system activity and latest risk assessments.</p>
 
 <!-- ── Stat Cards Row ────────────────────────────────── -->
 <div class="row g-4 mb-4">
@@ -261,7 +253,7 @@
     var chartMeta = [
         {% for p in recent|reverse %}
         {
-            name:   "{{ p.patient_name|replace('\\', '\\\\')|replace('\"', '\\\"')|replace('\n', ' ')|safe }}",
+            name:   {{ p.patient_name|tojson }},
             date:   "{{ p.created_at }}",
             result: "{{ p.result }}"
         }{% if not loop.last %},{% endif %}

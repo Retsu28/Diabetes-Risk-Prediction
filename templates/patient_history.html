@@ -178,7 +178,7 @@
                 </span>
             </div>
         </div>
-        <div class="d-none d-md-flex gap-2">
+        <div class="d-none d-md-flex gap-2" style="position:relative; z-index:1;">
             <a href="{{ url_for('predict', patient_id=patient.id) }}" class="btn btn-sm fw-semibold d-flex align-items-center gap-1" style="background:rgba(255,255,255,.15); color:#fff; border-radius:10px; backdrop-filter:blur(4px);" id="btn-history-predict">
                 <i class="bi bi-lightning-fill"></i> New Assessment
             </a>
