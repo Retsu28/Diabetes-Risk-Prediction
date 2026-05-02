@@ -12,7 +12,7 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
 
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -32,7 +32,7 @@
             --accent:         #4dabf7;
             --bg-body:        #f0f4f8;
             --sidebar-width:  260px;
-            --sidebar-bg:     linear-gradient(180deg, #0b3d91 0%, #0d6efd 100%);
+            --sidebar-bg:     linear-gradient(180deg, #05204a 0%, #0d6efd 100%);
             --card-radius:    16px;
             --transition:     all .25s ease;
         }
@@ -40,7 +40,7 @@
         * { box-sizing: border-box; }
 
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'DM Sans', sans-serif;
             background-color: var(--bg-body);
             margin: 0;
             min-height: 100vh;
@@ -193,6 +193,11 @@
         }
 
         /* ── Card Styles ───────────────────────────────── */
+        .heading-serif {
+            font-family: 'DM Serif Display', serif;
+            letter-spacing: -.3px;
+        }
+
         .card {
             border: none;
             border-radius: var(--card-radius) !important;
@@ -202,6 +207,7 @@
 
         .card:hover {
             box-shadow: 0 4px 12px rgba(0,0,0,.08), 0 8px 28px rgba(0,0,0,.06);
+            transform: translateY(-2px);
         }
 
         /* ── Stat Cards ────────────────────────────────── */
@@ -399,10 +405,16 @@
         }
 
         /* ── Scrollbar ─────────────────────────────────── */
-        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb { background: #c1cdd9; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* ── Accessibility: Focus Ring ─────────────────── */
+        *:focus-visible {
+            outline: 2px solid #0d6efd;
+            outline-offset: 3px;
+        }
     </style>
 </head>
 <body>
@@ -434,6 +446,11 @@
                     <i class="bi bi-clipboard2-pulse-fill"></i> Predict Risk
                 </a>
             </li>
+            <li>
+                <a href="#" class="{% if request.endpoint == 'patient_history' %}active{% endif %}" id="nav-history" onclick="event.preventDefault();" style="opacity:.5; cursor:default;">
+                    <i class="bi bi-clock-history"></i> Patient History
+                </a>
+            </li>
         </ul>
 
         <div class="sidebar-footer">
@@ -453,7 +470,7 @@
                 <span class="page-title">{% block page_title %}Dashboard{% endblock %}</span>
             </div>
             <div class="topbar-right">
-                <a href="{{ url_for('predict') }}" class="btn btn-primary btn-sm d-none d-md-inline-flex align-items-center gap-2" id="btn-new-assessment">
+                <a href="{{ url_for('predict') }}" class="btn btn-primary btn-sm d-none d-md-inline-flex align-items-center gap-2" id="btn-new-assessment" aria-label="New Assessment">
                     <i class="bi bi-lightning-fill"></i> New Assessment
                 </a>
             </div>
@@ -489,7 +506,9 @@
         }
 
         // ── Loading State for Submit Buttons ─────────────
+        // Skip forms that manage their own loading state (e.g. predict form)
         document.querySelectorAll('form').forEach(function(form) {
+            if (form.id === 'form-predict') return; /* handled by predict.html script */
             form.addEventListener('submit', function() {
                 var btn = form.querySelector('.btn-loading');
                 if (btn) {

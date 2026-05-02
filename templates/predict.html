@@ -63,7 +63,7 @@
     <div style="width:64px; height:64px; border-radius:18px; background:linear-gradient(135deg, rgba(13,110,253,.1), rgba(13,110,253,.2)); display:inline-flex; align-items:center; justify-content:center; font-size:1.8rem; color:var(--primary); margin-bottom:16px;">
         <i class="bi bi-clipboard2-pulse-fill"></i>
     </div>
-    <h2 class="fw-bold mb-2" style="color:#1e293b; letter-spacing:-.5px;">Diabetes Risk Assessment</h2>
+    <h2 class="heading-serif fw-bold mb-2" style="color:#1e293b; letter-spacing:-.5px;">Diabetes Risk Assessment</h2>
     <p class="text-muted mx-auto mb-0" style="max-width:520px; font-size:.92rem;">
         Enter the patient's clinical biomarkers below. Our trained machine-learning model will analyse the data and provide a risk classification.
     </p>
@@ -71,8 +71,8 @@
 
 <div class="row justify-content-center animate-in animate-delay-1">
     <div class="col-lg-8 col-md-10">
-        <div class="card">
-            <div class="card-body p-4 p-lg-5">
+        <div class="card" id="predict-card" style="position:relative; overflow:hidden;">
+            <div class="card-body p-4 p-lg-5" id="predict-card-body">
 
                 <!-- PREDICTION FORM -->
                 <form action="{{ url_for('predict') }}" method="POST" id="form-predict">
@@ -83,11 +83,21 @@
                             <span class="badge rounded-pill me-2" style="background:var(--primary); font-size:.7rem; vertical-align:1px;">1</span>
                             Select Patient
                         </h6>
+
+                        {% if preselected_patient_id %}
+                        <div class="alert d-flex align-items-center gap-2 py-2 px-3 mb-3" role="alert" id="prefill-banner"
+                             style="background:rgba(13,110,253,.06); color:var(--primary); border:1px solid rgba(13,110,253,.15); border-radius:12px; font-size:.84rem; font-weight:500;">
+                            <i class="bi bi-info-circle-fill"></i>
+                            <span class="flex-grow-1">Patient pre-filled from history. You may change this if needed.</span>
+                            <button type="button" class="btn-close" style="font-size:.6rem; filter:none; opacity:.5;" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                        {% endif %}
+
                         <div class="form-floating">
                             <select name="patient_id" class="form-select" id="selectPatient" required>
-                                <option value="">-- Click to Choose Patient --</option>
+                                <option value=""{% if not preselected_patient_id %} selected{% endif %}>-- Click to Choose Patient --</option>
                                 {% for pt in patients %}
-                                <option value="{{ pt.id }}">{{ pt.name }} (ID: {{ pt.id }})</option>
+                                <option value="{{ pt.id }}"{% if preselected_patient_id == pt.id %} selected{% endif %}>{{ pt.name }} (ID: {{ pt.id }})</option>
                                 {% endfor %}
                             </select>
                             <label for="selectPatient"><i class="bi bi-person-check me-1"></i> Patient</label>
@@ -106,60 +116,76 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <div class="form-floating">
-                                <input type="number" name="pregnancies" class="form-control" id="inputPreg" placeholder="Pregnancies" value="0" required>
+                                <input type="number" name="pregnancies" class="form-control" id="inputPreg" placeholder="Pregnancies" value="0" required data-min="0" data-max="20">
                                 <label for="inputPreg">Pregnancies</label>
                             </div>
+                            <div class="field-hint" id="hintPreg">Valid range: 0 – 20</div>
+                            <div class="field-error" id="errorPreg"></div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-floating">
-                                <input type="number" name="glucose" class="form-control" id="inputGlucose" placeholder="Glucose" value="120" required>
+                                <input type="number" name="glucose" class="form-control" id="inputGlucose" placeholder="Glucose" value="120" required data-min="44" data-max="199">
                                 <label for="inputGlucose">Glucose (mg/dL)</label>
                             </div>
+                            <div class="field-hint" id="hintGlucose">Valid range: 44 – 199</div>
+                            <div class="field-error" id="errorGlucose"></div>
                         </div>
                     </div>
 
                     <div class="row g-3 mt-1">
                         <div class="col-md-6">
                             <div class="form-floating">
-                                <input type="number" name="blood_pressure" class="form-control" id="inputBP" placeholder="Blood Pressure" value="80" required>
+                                <input type="number" name="blood_pressure" class="form-control" id="inputBP" placeholder="Blood Pressure" value="80" required data-min="24" data-max="122">
                                 <label for="inputBP">Blood Pressure (mm Hg)</label>
                             </div>
+                            <div class="field-hint" id="hintBP">Valid range: 24 – 122</div>
+                            <div class="field-error" id="errorBP"></div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-floating">
-                                <input type="number" name="skin_thickness" class="form-control" id="inputSkin" placeholder="Skin Thickness" value="20" required>
+                                <input type="number" name="skin_thickness" class="form-control" id="inputSkin" placeholder="Skin Thickness" value="20" required data-min="7" data-max="99">
                                 <label for="inputSkin">Skin Thickness (mm)</label>
                             </div>
+                            <div class="field-hint" id="hintSkin">Valid range: 7 – 99</div>
+                            <div class="field-error" id="errorSkin"></div>
                         </div>
                     </div>
 
                     <div class="row g-3 mt-1">
                         <div class="col-md-6">
                             <div class="form-floating">
-                                <input type="number" name="insulin" class="form-control" id="inputInsulin" placeholder="Insulin" value="80" required>
+                                <input type="number" name="insulin" class="form-control" id="inputInsulin" placeholder="Insulin" value="80" required data-min="14" data-max="846">
                                 <label for="inputInsulin">Insulin (mu U/ml)</label>
                             </div>
+                            <div class="field-hint" id="hintInsulin">Valid range: 14 – 846</div>
+                            <div class="field-error" id="errorInsulin"></div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-floating">
-                                <input type="number" step="0.1" name="bmi" class="form-control" id="inputBMI" placeholder="BMI" value="25.0" required>
+                                <input type="number" step="0.1" name="bmi" class="form-control" id="inputBMI" placeholder="BMI" value="25.0" required data-min="18.0" data-max="67.1">
                                 <label for="inputBMI">Body Mass Index (BMI)</label>
                             </div>
+                            <div class="field-hint" id="hintBMI">Valid range: 18.0 – 67.1</div>
+                            <div class="field-error" id="errorBMI"></div>
                         </div>
                     </div>
 
                     <div class="row g-3 mt-1 mb-4">
                         <div class="col-md-6">
                             <div class="form-floating">
-                                <input type="number" step="0.001" name="diabetes_pedigree" class="form-control" id="inputDPF" placeholder="DPF" value="0.500" required>
+                                <input type="number" step="0.001" name="diabetes_pedigree" class="form-control" id="inputDPF" placeholder="DPF" value="0.500" required data-min="0.078" data-max="2.42">
                                 <label for="inputDPF">Diabetes Pedigree Function</label>
                             </div>
+                            <div class="field-hint" id="hintDPF">Valid range: 0.078 – 2.42</div>
+                            <div class="field-error" id="errorDPF"></div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-floating">
-                                <input type="number" name="age" class="form-control" id="inputAge" placeholder="Age" value="30" required>
+                                <input type="number" name="age" class="form-control" id="inputAge" placeholder="Age" value="30" required data-min="21" data-max="81">
                                 <label for="inputAge">Age of Patient</label>
                             </div>
+                            <div class="field-hint" id="hintAge">Valid range: 21 – 81</div>
+                            <div class="field-error" id="errorAge"></div>
                         </div>
                     </div>
 
@@ -175,10 +201,234 @@
 
                 </form>
 
+                <!-- Loading Overlay (hidden by default) -->
+                <div class="predict-loading-overlay" id="predictOverlay">
+                    <div class="predict-loading-content">
+                        <div class="spinner-border text-primary mb-3" style="width:2.5rem; height:2.5rem;" role="status">
+                            <span class="visually-hidden">Loading…</span>
+                        </div>
+                        <div class="fw-bold" style="color:#1e293b; font-size:1rem;">Analyzing biomarkers…</div>
+                        <div class="text-muted" style="font-size:.82rem; margin-top:4px;">Running ML model prediction</div>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
 </div>
 
+
+<!-- Validation & Loading Overlay Styles -->
+<style>
+/* ── Field Hint & Validation Styles ──────────────────────────── */
+.field-hint {
+    font-size: .75rem;
+    color: #94a3b8;
+    margin-top: 4px;
+    padding-left: 2px;
+    letter-spacing: .02em;
+    transition: opacity .2s ease;
+}
+.field-error {
+    font-size: .75rem;
+    color: #e74c3c;
+    font-weight: 500;
+    margin-top: 2px;
+    padding-left: 2px;
+    min-height: 0;
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height .25s ease, opacity .2s ease, margin .2s ease;
+}
+.field-error.visible {
+    max-height: 28px;
+    opacity: 1;
+    margin-top: 4px;
+}
+/* Red border on invalid input */
+.form-control.is-invalid-range {
+    border-color: #e74c3c !important;
+    box-shadow: 0 0 0 3px rgba(231, 76, 60, .12) !important;
+}
+/* Hide the default hint when error is shown */
+.field-hint.hidden {
+    opacity: 0;
+    max-height: 0;
+    overflow: hidden;
+    margin: 0;
+}
+
+/* ── ML Prediction Loading Overlay ───────────────────────────── */
+.predict-loading-overlay {
+    display: none;
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,.82);
+    backdrop-filter: blur(3px);
+    z-index: 10;
+    border-radius: var(--card-radius);
+}
+.predict-loading-overlay.active {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.predict-loading-content {
+    text-align: center;
+    animation: fadeInUp .3s ease;
+}
+/* Blur form fields when loading */
+#predict-card-body.loading-blur > form {
+    filter: blur(2px);
+    pointer-events: none;
+    transition: filter .3s ease;
+}
+</style>
+
 {% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+/* ── Client-Side Range Validation (Blocking) ────────────────── */
+(function () {
+    'use strict';
+
+    var form = document.getElementById('form-predict');
+    if (!form) return; /* Result page — form not present */
+
+    var btn = document.getElementById('btn-analyze');
+
+    var fields = [
+        { id: 'inputPreg',    errorId: 'errorPreg',    hintId: 'hintPreg',    min: 0,     max: 20,   label: 'Pregnancies' },
+        { id: 'inputGlucose', errorId: 'errorGlucose', hintId: 'hintGlucose', min: 44,    max: 199,  label: 'Glucose' },
+        { id: 'inputBP',      errorId: 'errorBP',      hintId: 'hintBP',      min: 24,    max: 122,  label: 'Blood Pressure' },
+        { id: 'inputSkin',    errorId: 'errorSkin',     hintId: 'hintSkin',    min: 7,     max: 99,   label: 'Skin Thickness' },
+        { id: 'inputInsulin', errorId: 'errorInsulin',  hintId: 'hintInsulin', min: 14,    max: 846,  label: 'Insulin' },
+        { id: 'inputBMI',     errorId: 'errorBMI',      hintId: 'hintBMI',     min: 18.0,  max: 67.1, label: 'BMI' },
+        { id: 'inputDPF',     errorId: 'errorDPF',      hintId: 'hintDPF',     min: 0.078, max: 2.42, label: 'Diabetes Pedigree' },
+        { id: 'inputAge',     errorId: 'errorAge',      hintId: 'hintAge',     min: 21,    max: 81,   label: 'Age' }
+    ];
+
+    /**
+     * Validate a single field. Returns true if valid.
+     */
+    function validateField(cfg) {
+        var input = document.getElementById(cfg.id);
+        var errorEl = document.getElementById(cfg.errorId);
+        var hintEl  = document.getElementById(cfg.hintId);
+        if (!input || !errorEl || !hintEl) return true;
+
+        var raw = input.value.trim();
+        var val = parseFloat(raw);
+        var msg = '';
+
+        if (raw === '') {
+            msg = cfg.label + ' is required';
+        } else if (isNaN(val)) {
+            msg = 'Please enter a valid number';
+        } else if (val < cfg.min || val > cfg.max) {
+            msg = 'Valid range: ' + cfg.min + ' \u2013 ' + cfg.max;
+        }
+
+        if (msg) {
+            input.classList.add('is-invalid-range');
+            errorEl.textContent = msg;
+            errorEl.classList.add('visible');
+            hintEl.classList.add('hidden');
+            return false;
+        } else {
+            input.classList.remove('is-invalid-range');
+            errorEl.textContent = '';
+            errorEl.classList.remove('visible');
+            hintEl.classList.remove('hidden');
+            return true;
+        }
+    }
+
+    /**
+     * Validate all 8 fields. Returns true only if every field passes.
+     */
+    function validateAll() {
+        var allValid = true;
+        fields.forEach(function (cfg) {
+            if (!validateField(cfg)) allValid = false;
+        });
+        return allValid;
+    }
+
+    /**
+     * Update button visual state based on current validity.
+     * Does NOT use the disabled attribute — button stays clickable.
+     */
+    function updateButtonState() {
+        if (!btn) return;
+        var allValid = true;
+        fields.forEach(function (cfg) {
+            var input = document.getElementById(cfg.id);
+            if (!input) return;
+            var raw = input.value.trim();
+            var val = parseFloat(raw);
+            if (raw === '' || isNaN(val) || val < cfg.min || val > cfg.max) {
+                allValid = false;
+            }
+        });
+        if (allValid) {
+            btn.style.opacity = '';
+            btn.style.cursor = '';
+        } else {
+            btn.style.opacity = '0.6';
+            btn.style.cursor = 'not-allowed';
+        }
+    }
+
+    /* ── Attach live listeners (input + blur) ──────────────── */
+    fields.forEach(function (cfg) {
+        var input = document.getElementById(cfg.id);
+        if (!input) return;
+        input.addEventListener('input', function () {
+            validateField(cfg);
+            updateButtonState();
+        });
+        input.addEventListener('blur', function () {
+            validateField(cfg);
+            updateButtonState();
+        });
+    });
+
+    /* Initial button state check on page load */
+    updateButtonState();
+
+    /* ── Form submit: block if invalid, activate overlay if valid ── */
+    form.addEventListener('submit', function (e) {
+        var allValid = validateAll();
+        updateButtonState();
+
+        if (!allValid) {
+            /* Block submission */
+            e.preventDefault();
+            e.stopImmediatePropagation(); /* Prevent base.html btn-loading handler */
+
+            /* Scroll to first invalid field */
+            var firstInvalid = document.querySelector('.is-invalid-range');
+            if (firstInvalid) {
+                firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                firstInvalid.focus({ preventScroll: true });
+            }
+            return;
+        }
+
+        /* All valid — activate loading overlay + button spinner */
+        if (btn) {
+            btn.classList.add('loading');
+            setTimeout(function() { btn.disabled = true; }, 50);
+        }
+        var cardBody = document.getElementById('predict-card-body');
+        var overlay  = document.getElementById('predictOverlay');
+        if (cardBody) cardBody.classList.add('loading-blur');
+        if (overlay)  overlay.classList.add('active');
+    });
+})();
+</script>
 {% endblock %}

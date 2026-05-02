@@ -9,7 +9,7 @@
 <!-- ── Header ────────────────────────────────────────── -->
 <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4 animate-in">
     <div>
-        <h2 class="fw-bold mb-1" style="color:#1e293b; letter-spacing:-.5px;">Patient Records</h2>
+        <h2 class="heading-serif fw-bold mb-1" style="color:#1e293b; letter-spacing:-.5px;">Patient Records</h2>
         <p class="text-muted mb-0" style="font-size:.92rem;">Manage and view all enrolled subjects.</p>
     </div>
     <!-- Button to go to the Add Patient form -->
@@ -18,8 +18,100 @@
     </a>
 </div>
 
+{% if patients|length == 0 %}
+<!-- ── Empty State (No patients registered) ──────────── -->
+<div class="card animate-in animate-delay-1">
+    <div class="card-body text-center py-5">
+        <div style="width:80px; height:80px; border-radius:50%; background:rgba(13,110,253,.08); display:inline-flex; align-items:center; justify-content:center; font-size:2.5rem; color:var(--primary); margin-bottom:16px;">
+            <i class="bi bi-people"></i>
+        </div>
+        <h5 class="heading-serif fw-bold mb-2" style="color:#1e293b;">No patients registered yet</h5>
+        <p class="text-muted mb-3" style="max-width:380px; margin:0 auto; font-size:.9rem;">
+            Get started by registering your first patient.
+        </p>
+        <a href="{{ url_for('add_patient') }}" class="btn btn-primary d-inline-flex align-items-center gap-2" id="btn-empty-add-patient">
+            <i class="bi bi-person-plus-fill"></i> Register New Patient
+        </a>
+    </div>
+</div>
+
+{% else %}
+<!-- ── Search Bar Styles ──────────────────────────────── -->
+<style>
+.patient-search-wrap {
+    position: relative;
+    max-width: 360px;
+}
+.patient-search-wrap .search-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    font-size: 1rem;
+    pointer-events: none;
+    transition: color .2s ease;
+}
+.patient-search-wrap .form-control {
+    padding-left: 40px;
+    padding-right: 36px;
+    border-radius: 12px;
+    border: 2px solid #e2e8f0;
+    font-size: .9rem;
+    height: 44px;
+    transition: all .25s ease;
+}
+.patient-search-wrap .form-control:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(13, 110, 253, .12);
+}
+.patient-search-wrap .form-control:focus ~ .search-icon {
+    color: var(--primary);
+}
+.patient-search-wrap .btn-clear {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #94a3b8;
+    font-size: 1.1rem;
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 50%;
+    line-height: 1;
+    display: none;
+    transition: color .15s ease, background .15s ease;
+}
+.patient-search-wrap .btn-clear:hover {
+    color: #e74c3c;
+    background: rgba(231, 76, 60, .08);
+}
+.patient-search-wrap .btn-clear.visible {
+    display: block;
+}
+.search-count {
+    font-size: .78rem;
+    color: #94a3b8;
+    margin-top: 6px;
+    padding-left: 2px;
+}
+</style>
+
 <!-- ── Patient Table Card ────────────────────────────── -->
 <div class="card animate-in animate-delay-1">
+
+    <!-- Search Bar -->
+    <div class="card-header bg-white px-4 py-3" style="border-bottom:1px solid #f1f5f9; border-radius:16px 16px 0 0 !important;">
+        <div class="patient-search-wrap">
+            <input type="text" class="form-control" id="patientSearch" placeholder="Search by patient name…" autocomplete="off">
+            <i class="bi bi-search search-icon"></i>
+            <button type="button" class="btn-clear" id="searchClear" aria-label="Clear search">&times;</button>
+        </div>
+        <div class="search-count" id="searchCount"></div>
+    </div>
+
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-modern mb-0 align-middle" id="patients-table">
@@ -34,9 +126,9 @@
                         <th class="text-end pe-4">Actions</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="patientsBody">
                     {% for p in patients %}
-                    <tr>
+                    <tr class="patient-row" data-patient-name="{{ p.name|lower }}">
                         <td class="ps-4">
                             <div class="d-flex align-items-center gap-2">
                                 <div style="width:36px; height:36px; border-radius:10px; background:rgba(13,110,253,.08); display:flex; align-items:center; justify-content:center; color:var(--primary); font-weight:700; font-size:.82rem;">
@@ -65,6 +157,11 @@
                             <i class="bi bi-telephone me-1" style="font-size:.75rem;"></i> {{ p.contact }}
                         </td>
                         <td class="text-end pe-4">
+                            <!-- Link to the Patient History timeline -->
+                            <a href="{{ url_for('patient_history', id=p.id) }}" class="btn btn-sm btn-outline-secondary me-1" style="border-radius:10px; font-size:.78rem; font-weight:600;" id="btn-history-{{ p.id }}">
+                                <i class="bi bi-clock-history me-1"></i> History
+                            </a>
+
                             <!-- Link to the Edit form (passes the patient ID) -->
                             <a href="{{ url_for('edit_patient', id=p.id) }}" class="btn btn-sm btn-outline-primary me-1" style="border-radius:10px; font-size:.78rem; font-weight:600;" id="btn-edit-{{ p.id }}">
                                 <i class="bi bi-pencil-square me-1"></i> Edit
@@ -80,20 +177,96 @@
                             </a>
                         </td>
                     </tr>
-                    {% else %}
-                    <tr>
+                    {% endfor %}
+
+                    <!-- No-results empty state (hidden by default) -->
+                    <tr id="noResultsRow" style="display:none;">
                         <td colspan="5" class="text-center py-5">
                             <i class="bi bi-person-x text-muted" style="font-size:2.5rem; opacity:.3;"></i>
-                            <p class="text-muted mt-2 mb-1">No patient records found.</p>
-                            <a href="{{ url_for('add_patient') }}" class="btn btn-primary btn-sm mt-1">
-                                <i class="bi bi-plus-lg me-1"></i> Add Patient
-                            </a>
+                            <p class="fw-bold text-muted mt-2 mb-1">No patients found</p>
+                            <p class="text-muted small mb-0">Try a different name or clear the search.</p>
                         </td>
                     </tr>
-                    {% endfor %}
                 </tbody>
             </table>
         </div>
     </div>
 </div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+/* ── Patient Search Filter ───────────────────────────────────── */
+(function () {
+    'use strict';
+
+    var searchInput = document.getElementById('patientSearch');
+    if (!searchInput) return; /* Empty state — no table rendered */
+
+    var clearBtn    = document.getElementById('searchClear');
+    var countEl     = document.getElementById('searchCount');
+    var noResultRow = document.getElementById('noResultsRow');
+    var rows        = document.querySelectorAll('#patientsBody .patient-row');
+    var totalCount  = rows.length;
+
+    /* Show initial count */
+    updateCount(totalCount);
+
+    /* Live filter on input */
+    searchInput.addEventListener('input', filterRows);
+
+    /* Clear button */
+    clearBtn.addEventListener('click', function () {
+        searchInput.value = '';
+        clearBtn.classList.remove('visible');
+        filterRows();
+        searchInput.focus();
+    });
+
+    function filterRows() {
+        var query = searchInput.value.trim().toLowerCase();
+
+        /* Toggle clear button visibility */
+        if (query.length > 0) {
+            clearBtn.classList.add('visible');
+        } else {
+            clearBtn.classList.remove('visible');
+        }
+
+        var visible = 0;
+
+        for (var i = 0; i < rows.length; i++) {
+            var name = rows[i].getAttribute('data-patient-name') || '';
+            if (query === '' || name.indexOf(query) !== -1) {
+                rows[i].style.display = '';
+                visible++;
+            } else {
+                rows[i].style.display = 'none';
+            }
+        }
+
+        /* No-results state */
+        if (totalCount > 0 && visible === 0) {
+            noResultRow.style.display = '';
+        } else {
+            noResultRow.style.display = 'none';
+        }
+
+        updateCount(visible, query);
+    }
+
+    function updateCount(shown, query) {
+        if (totalCount === 0) {
+            countEl.textContent = '';
+            return;
+        }
+        if (!query) {
+            countEl.textContent = 'Showing all ' + totalCount + ' patient' + (totalCount !== 1 ? 's' : '');
+        } else {
+            countEl.textContent = 'Showing ' + shown + ' of ' + totalCount + ' patient' + (totalCount !== 1 ? 's' : '');
+        }
+    }
+})();
+</script>
 {% endblock %}

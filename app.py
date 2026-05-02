@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 import mysql.connector # Library to connect Python to MySQL
 import joblib          # Library to load the saved 'model.pkl' and 'scaler.pkl'
 import numpy as np     # Library for handling numerical data (arrays)
@@ -24,6 +24,13 @@ def get_db_connection():
     We call this every time we need to talk to the database.
     """
     return mysql.connector.connect(**db_config)
+
+# --- ERROR HANDLERS ---
+
+@app.errorhandler(404)
+def page_not_found(e):
+    """Custom 404 page that keeps the sidebar/topbar layout intact."""
+    return render_template('404.html'), 404
 
 # --- ROUTES ---
 
@@ -55,7 +62,7 @@ def dashboard():
 
         # 3. Get recent predictions with matching patient names using a JOIN
         query = """
-            SELECT p.result, p.created_at, pt.name as patient_name 
+            SELECT p.result, p.created_at, p.patient_id, pt.name as patient_name 
             FROM predictions p 
             JOIN patients pt ON p.patient_id = pt.id 
             ORDER BY p.created_at DESC 
@@ -63,6 +70,9 @@ def dashboard():
         """
         cursor.execute(query)
         recent = cursor.fetchall()
+
+        # Calculate high risk rate percentage
+        high_risk_rate = round((high_risk_count / total_predictions * 100), 1) if total_predictions > 0 else 0
 
         cursor.close()
         conn.close()
@@ -73,6 +83,7 @@ def dashboard():
                                total_predictions=total_predictions, 
                                high_risk_count=high_risk_count,
                                low_risk_count=low_risk_count,
+                               high_risk_rate=high_risk_rate,
                                recent=recent)
     except Exception as e:
         return f"Database Error: {str(e)}. Make sure your MySQL server is running and the database exists."
@@ -164,6 +175,45 @@ def delete_patient(id):
     flash("Patient has been removed.")
     return redirect(url_for('list_patients'))
 
+@app.route('/patients/<int:id>/history')
+def patient_history(id):
+    """
+    PATIENT HISTORY ROUTE
+    - Displays a vertical timeline of all past assessments for a specific patient.
+    - Provides biomarker trend data for Chart.js line charts.
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    # Fetch patient details
+    cursor.execute("SELECT * FROM patients WHERE id = %s", (id,))
+    patient = cursor.fetchone()
+
+    if not patient:
+        cursor.close()
+        conn.close()
+        flash("Patient not found.")
+        return redirect(url_for('list_patients'))
+
+    # Fetch ALL predictions for this patient, ordered newest first (for timeline)
+    cursor.execute("""
+        SELECT * FROM predictions 
+        WHERE patient_id = %s 
+        ORDER BY created_at DESC
+    """, (id,))
+    predictions = cursor.fetchall()
+
+    # Prepare chronological data for trend charts (oldest first)
+    predictions_chrono = list(reversed(predictions))
+
+    cursor.close()
+    conn.close()
+
+    return render_template('patient_history.html',
+                           patient=patient,
+                           predictions=predictions,
+                           predictions_chrono=predictions_chrono)
+
 @app.route('/predict', methods=['GET', 'POST'])
 def predict():
     """
@@ -224,7 +274,12 @@ def predict():
     patients_list = cursor.fetchall()
     cursor.close()
     conn.close()
-    return render_template('predict.html', patients=patients_list)
+
+    # Check if a patient_id was passed via query param (e.g. from Patient History page)
+    preselected_patient_id = request.args.get('patient_id', default=None, type=int)
+
+    return render_template('predict.html', patients=patients_list,
+                           preselected_patient_id=preselected_patient_id)
 
 if __name__ == '__main__':
     # Start the server. In your local VS Code, debug=True is very helpful.

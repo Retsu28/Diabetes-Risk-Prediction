@@ -9,7 +9,7 @@
 <!-- ── Welcome Header ────────────────────────────────── -->
 <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4 animate-in">
     <div>
-        <h2 class="fw-bold mb-1" style="color:#1e293b; letter-spacing:-.5px;">Health Dashboard</h2>
+        <h2 class="heading-serif fw-bold mb-1" style="color:#1e293b; letter-spacing:-.5px;">Health Dashboard</h2>
         <p class="text-muted mb-0" style="font-size:.92rem;">Summary of system activity and latest risk assessments.</p>
     </div>
     <a href="{{ url_for('predict') }}" class="btn btn-primary d-flex align-items-center gap-2 shadow-sm" id="btn-dashboard-assess">
@@ -79,10 +79,35 @@
     </div>
 </div>
 
-<!-- ── Chart & Recent Predictions Row ────────────────── -->
-<div class="row g-4">
+<!-- ── High Risk Rate Card ─────────────────────────── -->
+<div class="row g-4 mb-4">
+    <div class="col-12 animate-in animate-delay-3">
+        <div class="card stat-card">
+            <div class="card-body d-flex align-items-center gap-4 p-4 flex-wrap">
+                <div class="stat-icon" style="background:rgba(231,76,60,.1); color:#e74c3c;">
+                    <i class="bi bi-heart-pulse-fill"></i>
+                </div>
+                <div class="flex-grow-1">
+                    <div class="stat-label text-muted">High Risk Rate</div>
+                    <div class="d-flex align-items-center gap-3 mt-1">
+                        <span class="stat-value" style="color:#e74c3c; font-size:1.6rem;">{{ high_risk_rate }}%</span>
+                        <div class="flex-grow-1" style="max-width:300px;">
+                            <div style="height:8px; background:#f1f5f9; border-radius:4px; overflow:hidden;">
+                                <div style="height:100%; width:{{ high_risk_rate }}%; background:linear-gradient(90deg, #ee5a24, #ff6b6b); border-radius:4px; transition: width .6s ease;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-muted mt-1" style="font-size:.76rem;">{{ high_risk_count }} of {{ total_predictions }} assessments flagged as high risk</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-    <!-- Pie Chart -->
+<!-- ── Charts Row ────────────────────────────────── -->
+<div class="row g-4 mb-4">
+
+    <!-- Doughnut Chart -->
     <div class="col-lg-4 animate-in animate-delay-3">
         <div class="card h-100">
             <div class="card-body p-4">
@@ -107,9 +132,36 @@
         </div>
     </div>
 
-    <!-- Recent Predictions Table -->
+    <!-- Activity Bar Chart -->
     <div class="col-lg-8 animate-in animate-delay-4">
         <div class="card h-100">
+            <div class="card-body p-4">
+                <h6 class="fw-bold text-uppercase small text-muted mb-3">
+                    <i class="bi bi-bar-chart-fill me-1"></i> Recent Assessment Activity
+                </h6>
+                {% if recent|length > 0 %}
+                <div style="position:relative; max-height:260px;">
+                    <canvas id="activityChart"></canvas>
+                </div>
+                <div class="d-flex justify-content-center gap-4 mt-3" style="font-size:.82rem;">
+                    <span><i class="bi bi-circle-fill me-1" style="color:#ff6b6b;"></i> High Risk</span>
+                    <span><i class="bi bi-circle-fill me-1" style="color:#51cf66;"></i> Low Risk</span>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-activity text-muted" style="font-size:2.5rem; opacity:.3;"></i>
+                    <p class="text-muted small mt-2 mb-0">No activity to display yet.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── Recent Predictions Table ────────────────────── -->
+<div class="row g-4">
+    <div class="col-12 animate-in animate-delay-4">
+        <div class="card">
             <div class="card-header bg-white d-flex justify-content-between align-items-center px-4 py-3" style="border-bottom:1px solid #f1f5f9; border-radius: 16px 16px 0 0 !important;">
                 <h6 class="mb-0 fw-bold" style="color:#1e293b;">
                     <i class="bi bi-clock-history me-1"></i> Recent Predictions
@@ -132,14 +184,16 @@
                             {% for p in recent %}
                             <tr>
                                 <td class="ps-4 fw-semibold">
-                                    <i class="bi bi-person-circle me-1 text-muted"></i>
-                                    {{ p.patient_name }}
+                                    <a href="{{ url_for('patient_history', id=p.patient_id) }}" class="text-decoration-none" style="color:#1e293b;">
+                                        <i class="bi bi-person-circle me-1 text-muted"></i>
+                                        {{ p.patient_name }}
+                                    </a>
                                 </td>
                                 <td>
-                                    <!-- If result is 'High Risk', show red badge. Else show green. -->
                                     <span class="{% if p.result == 'High Risk' %}badge-risk-high{% else %}badge-risk-low{% endif %}">
                                         <i class="bi {% if p.result == 'High Risk' %}bi-exclamation-triangle-fill{% else %}bi-shield-check{% endif %} me-1"></i>
                                         {{ p.result }}
+                                        <span class="visually-hidden">Risk Level: {{ p.result }}</span>
                                     </span>
                                 </td>
                                 <td class="text-muted" style="font-size:.84rem;">{{ p.created_at }}</td>
@@ -156,9 +210,13 @@
                     </table>
                 </div>
             </div>
+            <div class="card-footer bg-white text-center py-3" style="border-top:1px solid #f1f5f9; border-radius:0 0 16px 16px !important;">
+                <a href="{{ url_for('list_patients') }}" class="text-decoration-none fw-semibold" style="font-size:.85rem; color:var(--primary);">
+                    <i class="bi bi-arrow-right me-1"></i> View All Patients
+                </a>
+            </div>
         </div>
     </div>
-
 </div>
 {% endblock %}
 
@@ -194,5 +252,113 @@
         }
     });
 </script>
+
+<!-- Activity Bar Chart -->
+{% if recent|length > 0 %}
+<script>
+(function() {
+    /* ── Build chart data from Jinja context ──────────────────── */
+    var chartMeta = [
+        {% for p in recent|reverse %}
+        {
+            name:   "{{ p.patient_name|replace('\\', '\\\\')|replace('\"', '\\\"')|replace('\n', ' ')|safe }}",
+            date:   "{{ p.created_at }}",
+            result: "{{ p.result }}"
+        }{% if not loop.last %},{% endif %}
+        {% endfor %}
+    ];
+
+    /* Format date helper: "2026-04-29 14:30:00" → "Apr 29" */
+    function shortDate(raw) {
+        var d = new Date(raw);
+        if (isNaN(d)) return raw;  /* fallback to raw string */
+        var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        return months[d.getMonth()] + ' ' + d.getDate();
+    }
+
+    /* Format full date for tooltip: "Apr 29, 2026 · 2:30 PM" */
+    function fullDate(raw) {
+        var d = new Date(raw);
+        if (isNaN(d)) return raw;
+        var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        var h = d.getHours(), m = d.getMinutes();
+        var ampm = h >= 12 ? 'PM' : 'AM';
+        h = h % 12 || 12;
+        var mm = m < 10 ? '0' + m : m;
+        return months[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear() + ' · ' + h + ':' + mm + ' ' + ampm;
+    }
+
+    var labels = chartMeta.map(function(m) { return m.name + ' \u2014 ' + shortDate(m.date); });
+    var values = chartMeta.map(function() { return 1; }); /* Uniform height — color shows risk */
+    var bgColors = chartMeta.map(function(m) {
+        return m.result === 'High Risk' ? 'rgba(255, 107, 107, .75)' : 'rgba(81, 207, 102, .75)';
+    });
+    var borderColors = chartMeta.map(function(m) {
+        return m.result === 'High Risk' ? '#ff6b6b' : '#51cf66';
+    });
+
+    var activityCtx = document.getElementById('activityChart').getContext('2d');
+    new Chart(activityCtx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Risk Level',
+                data: values,
+                backgroundColor: bgColors,
+                borderColor: borderColors,
+                borderWidth: 2,
+                borderRadius: 8,
+                borderSkipped: false
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: 'rgba(30, 41, 59, .92)',
+                    titleFont:  { family: "'DM Sans'", size: 13, weight: '600' },
+                    bodyFont:   { family: "'DM Sans'", size: 12 },
+                    padding: 12,
+                    cornerRadius: 10,
+                    callbacks: {
+                        title: function(items) {
+                            var idx = items[0].dataIndex;
+                            return chartMeta[idx].name;
+                        },
+                        label: function(context) {
+                            var idx = context.dataIndex;
+                            var risk = chartMeta[idx].result === 'High Risk' ? '\u26a0 High Risk' : '\u2713 Low Risk';
+                            return [
+                                fullDate(chartMeta[idx].date),
+                                risk
+                            ];
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: { display: false },
+                    ticks: {
+                        font: { size: 11, family: "'DM Sans'" },
+                        color: '#64748b',
+                        maxRotation: 25,
+                        minRotation: 0
+                    }
+                },
+                y: {
+                    display: false,
+                    min: 0,
+                    max: 1.15
+                }
+            }
+        }
+    });
+})();
+</script>
+{% endif %}
 {% endif %}
 {% endblock %}
